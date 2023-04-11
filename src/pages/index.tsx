@@ -22,7 +22,7 @@ export default function Home() {
       alert(`Response: ${result.data}`)
     }
     return (
-      // We pass the event to the handleSubmit() function on submit.
+
       <form onSubmit={handleSubmit}>
         <label htmlFor="message">Ask Here</label>
         <input type="text" id="message" name="message" required />
