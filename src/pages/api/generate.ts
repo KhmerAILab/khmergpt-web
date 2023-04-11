@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { translate } from '@vitalets/google-translate-api';
-const { OpenAIApi, Configuration } = require('openai-api');
+const { OpenAIApi, Configuration } = require('openai');
 import { upstashRest } from "../../utils/rate-limit"; //
 
 require('dotenv').config();
