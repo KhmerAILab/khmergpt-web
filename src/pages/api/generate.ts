@@ -1,17 +1,40 @@
+import type { NextApiRequest, NextApiResponse } from 'next'
 const { translate } = require('@vitalets/google-translate-api');
 const { Configuration, OpenAIApi } = require("openai");
-require('dotenv').config()
+import {Ratelimit} from "@upstash/ratelimit";
+import {Redis} from "@upstash/redis";
+
+require('dotenv').config();
 
 const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
   });
+
 const openai = new OpenAIApi(configuration);
 
-export default async function handler(req: any, res: any) {
-    if (req.method !== 'POST') {
-        res.status(405).send({ message: 'Only POST requests allowed' })
-        return
-      }
+const redis = new Redis({
+    url: process.env.UPSTASH_REDIS_REST_URL,
+    token: process.env.UPSTASH_REDIS_REST_TOKEN,
+})
+// Create a new ratelimiter, that allows 10 requests per 60 seconds
+const ratelimit = new Ratelimit({
+  redis: redis,
+  limiter: Ratelimit.fixedWindow(10, "60 s"),
+});
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    res.status(405).send({ message: 'Only POST requests allowed' })
+    return
+  }
+  const identifier = "api";
+  const result = await ratelimit.limit(identifier);
+  res.setHeader('X-RateLimit-Limit', result.limit)
+  res.setHeader('X-RateLimit-Remaining', result.remaining)
+  if (!result.success) {
+    res.status(200).json({message: 'The request has been rate limited.', rateLimitState: result})
+    return
+  }
       console.log(req.body);
       const body = req.body
 
@@ -33,5 +56,5 @@ export default async function handler(req: any, res: any) {
   
       let resGPTkm = await translate(resGPT, { to: 'km' });
     
-    return res.send({ success: true , data: resGPTkm.text})
+    return res.send({ success: true , data: resGPTkm.text, rateLimitState: result})
 }
