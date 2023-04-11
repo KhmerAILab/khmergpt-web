@@ -17,12 +17,11 @@ export default function Home() {
         },
         body: JSONdata,
       }
-      const res = await fetch(endpoint, options)
-      const result = await res.json()
+      const res = await fetch(endpoint, options);
+      const result = await res.json();
       alert(`Response: ${result.data}`)
     }
     return (
-
       <form onSubmit={handleSubmit}>
         <label htmlFor="message">Ask Here</label>
         <input type="text" id="message" name="message" required />
