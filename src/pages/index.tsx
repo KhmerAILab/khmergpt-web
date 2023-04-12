@@ -3,11 +3,9 @@ import { TextInput, Checkbox, Button, Group, Box } from '@mantine/core';
 
 export default function Home() {
     // Handles the submit event on form submit.
-    const handleSubmit = async (values: any) => {
-
-
+    const handleSubmit = async (message: string) => {
       const data = {
-        message: values.message,
+        message: message,
       }
       const JSONdata = JSON.stringify(data)
 
@@ -25,17 +23,17 @@ export default function Home() {
     }
     const form = useForm({
       initialValues: {
-        message: '',
+        message: 'នេះគឺជាសំណួរមួយ',
       },
     });
     return (
       <Box maw={300} mx="auto">
-      <form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
+      <form onSubmit={form.onSubmit((values) => handleSubmit(values.message))}>
         <TextInput
           withAsterisk
-          label="Message"
+          label="Prompt"
           placeholder="Prompt Here"
-          {...form.getInputProps('email')}
+          {...form.getInputProps('message')}
         />
 
         <Group position="right" mt="md">
