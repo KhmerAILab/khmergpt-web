@@ -1,11 +1,13 @@
+import { useForm } from '@mantine/form';
+import { TextInput, Checkbox, Button, Group, Box } from '@mantine/core';
+
 export default function Home() {
     // Handles the submit event on form submit.
-    const handleSubmit = async (event: any) => {
+    const handleSubmit = async (values: any) => {
 
-      event.preventDefault()
 
       const data = {
-        message: event.target.message.value,
+        message: values.message,
       }
       const JSONdata = JSON.stringify(data)
 
@@ -21,13 +23,27 @@ export default function Home() {
       const result = await res.json();
       alert(`Response: ${result.data}`)
     }
+    const form = useForm({
+      initialValues: {
+        message: '',
+      },
+    });
     return (
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="message">Ask Here</label>
-        <input type="text" id="message" name="message" required />
+      <Box maw={300} mx="auto">
+      <form onSubmit={form.onSubmit((values) => handleSubmit(values))}>
+        <TextInput
+          withAsterisk
+          label="Message"
+          placeholder="Prompt Here"
+          {...form.getInputProps('email')}
+        />
 
-        <button type="submit">Submit</button>
+        <Group position="right" mt="md">
+          <Button type="submit">Submit</Button>
+        </Group>
       </form>
+    </Box>
+
     )
 }
 

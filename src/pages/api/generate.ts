@@ -1,15 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { translate } from '@vitalets/google-translate-api';
-const { OpenAIApi, Configuration } = require('openai');
-import { upstashRest } from "../../utils/rate-limit"; //
+import { translateMessage} from '@/utils/translate'
+import { generate } from '@/utils/generate';
+import { v4 as uuidv4 } from 'uuid'
+import rateLimit from '@/utils/rate-limit'
 
-require('dotenv').config();
-
-const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-const openai = new OpenAIApi(configuration);
+const limiter = rateLimit({
+  interval: 60 * 1000, // 60 seconds
+  uniqueTokenPerInterval: 500, // Max 500 users per second
+})
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -17,34 +15,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return
   }
       console.log(req.body);
-      const identifier = "api";
-      const result = await upstashRest(identifier);
-      res.setHeader('X-RateLimit-Limit', result.limit)
-      res.setHeader('X-RateLimit-Remaining', result.remaining)
+      try{
+      await limiter.check(res, 10, 'CACHE_TOKEN') // 10 requests per minute
 
-      if (!result.success) {
-        res.status(200).json({message: 'The request has been rate limited.', rateLimitState: result})
-        return
-      }
+      let msg = req.body.message;
 
-      const body = req.body;
-
-      let msg = body.message;
-
-      let translated = await translate(msg, { to: 'en' });
-  
-      const completion = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo",
-        messages: [{
-          "role": "system", "content": "You are ChatGPT, a helpful chatbot. You will be given a user question. You will answer the question to the best of your ability and not deviate to another topic. Do not make up false information. If you do not know, say 'I do not know'."
-        },
-        {
-            "role": "user", "content": translated.text
-        }]
-      })
+      let translated = await translateMessage(msg, 'en');
       
-      let resGPT = completion.data.choices[0].message.content;
-      let resGPTkm = await translate(resGPT, { to: 'km' });
-      console.log(completion);
-    return res.send({ success: true , data: resGPTkm.text, rateLimitState: result})
+      let resGPT = await generate(translated);
+      
+      let resGPTkm = await translateMessage(resGPT, 'km');
+
+      return res.send({ success: true , data: resGPTkm});
+
+      } catch(err){
+        res.send({ success: false, data: 'Rate limit exceeded' })
+        console.log(err);
+      }
 }

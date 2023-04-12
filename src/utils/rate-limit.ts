@@ -1,18 +1,35 @@
-import {Ratelimit} from "@upstash/ratelimit";
-import {Redis} from "@upstash/redis";
+import type { NextApiResponse } from 'next';
+const { LRUCache } = require('lru-cache');
 
-const redis = new Redis({
-url: process.env.UPSTASH_REST_API_DOMAIN,
-token: process.env.UPSTASH_REST_API_TOKEN,
-})
+type Options = {
+  uniqueTokenPerInterval?: number
+  interval?: number
+}
 
-// Create a new ratelimiter, that allows 10 requests per 60 seconds
-const ratelimit = new Ratelimit({
-redis: redis,
-limiter: Ratelimit.fixedWindow(10, "60 s"),
-});
+export default function rateLimit(options?: Options) {
+  const tokenCache = new LRUCache({
+    max: options?.uniqueTokenPerInterval || 500,
+    ttl: options?.interval || 60000,
+  })
 
-export async function upstashRest(identifier: string){
-  const result = await ratelimit.limit(identifier);
-  return result;
+  return {
+    check: (res: NextApiResponse, limit: number, token: string) =>
+      new Promise<void>((resolve, reject) => {
+        const tokenCount = (tokenCache.get(token) as number[]) || [0]
+        if (tokenCount[0] === 0) {
+          tokenCache.set(token, tokenCount)
+        }
+        tokenCount[0] += 1
+
+        const currentUsage = tokenCount[0]
+        const isRateLimited = currentUsage >= limit
+        res.setHeader('X-RateLimit-Limit', limit)
+        res.setHeader(
+          'X-RateLimit-Remaining',
+          isRateLimited ? 0 : limit - currentUsage
+        )
+
+        return isRateLimited ? reject() : resolve()
+      }),
+  }
 }
