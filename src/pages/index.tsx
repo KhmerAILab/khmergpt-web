@@ -37,14 +37,6 @@ const Home = () => {
       <div>
         {session ? (
           <>
-            <p>hi {session.user?.name}</p>
-            <button
-              onClick={() => {
-                signOut().catch(console.log);
-              }}
-            >
-              Logout
-            </button>
             <Box maw={300} mx="auto">
               <p>hi {session.user?.name}</p>
               <button
