@@ -4,11 +4,6 @@ import { z } from "zod";
  * Specify your server-side environment variables schema here. This way you can ensure the app isn't
  * built with invalid env vars.
  */
-
-export interface ProcessEnv {
-  [key: string]: string | undefined;
-}
-
 const server = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]),
   NEXTAUTH_SECRET:
@@ -42,11 +37,11 @@ const client = z.object({
  * @type {Record<keyof z.infer<typeof server> | keyof z.infer<typeof client>, string | undefined>}
  */
 const processEnv = {
-  NODE_ENV: process.env.NODE_ENV,
-  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-  NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-  DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
-  DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
+  NODE_ENV: process.env.NODE_ENV as string,
+  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET as string,
+  NEXTAUTH_URL: process.env.NEXTAUTH_URL as string,
+  DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID as string,
+  DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET as string,
   
   // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
 };
