@@ -19,8 +19,7 @@ export async function generate(input:string) {
         }]
       })
       
-      //let resGPT = completion.data.choices[0].message.content;
-      let resGPT = "lol"
+      let resGPT = completion.data.choices[0].message.content;
       console.log(resGPT);
     return resGPT
 }
