@@ -1,6 +1,7 @@
 import { useForm } from '@mantine/form';
-import { TextInput, Checkbox, Button, Group, Box } from '@mantine/core';
+import { TextInput, Checkbox, Button, Group, Box, ButtonProps } from '@mantine/core';
 import { signIn, signOut, useSession } from "next-auth/react";
+import { GithubIcon, DiscordIcon } from '@mantine/ds';
 
 const Home = () => {
     // Handles the submit event on form submit.
@@ -62,20 +63,58 @@ const Home = () => {
 
           </>
         ) : (
-          <Box maw={300} mx="auto">
-          <button
-            onClick={() => {
-              signIn("discord").catch(console.log);
-            }}
-          >
-            Login with Discord
-           </button>
-           </Box>
+          <Group position="center" sx={{ padding: 15 }}>
+            
+            <DiscordButton>Login with Discord</DiscordButton>
+            <GithubButton>Login with GitHub</GithubButton>
+
+          </Group>
+           
         )}
       </div>
     </main>
 
     )
+}
+
+export function GithubButton(props: ButtonProps) {
+  return (
+    <Button
+      onClick={() => {
+        signIn("github").catch(console.log);
+      }}
+      {...props}
+      leftIcon={<GithubIcon size="1rem" />}
+      sx={(theme) => ({
+        backgroundColor: theme.colors.dark[theme.colorScheme === 'dark' ? 9 : 6],
+        color: '#fff',
+        '&:hover': {
+          backgroundColor: theme.colors.dark[theme.colorScheme === 'dark' ? 9 : 6],
+        },
+      })}
+    />
+  );
+}
+
+export function DiscordButton(props: ButtonProps) {
+  return (
+    <Button
+      onClick={() => {
+        signIn("discord").catch(console.log);
+      }}
+      leftIcon={<DiscordIcon size="1rem" />}
+      sx={(theme) => ({
+        backgroundColor: theme.colorScheme === 'dark' ? '#5865F2' : '#5865F2',
+        '&:not([data-disabled]):hover': {
+          backgroundColor:
+            theme.colorScheme === 'dark'
+              ? theme.fn.lighten('#5865F2', 0.05)
+              : theme.fn.darken('#5865F2', 0.05),
+        },
+      })}
+      {...props}
+    />
+  );
 }
 
 export default Home;
