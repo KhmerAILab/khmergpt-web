@@ -1,5 +1,4 @@
 const { OpenAIApi, Configuration } = require('openai');
-require('dotenv').config();
 
 const configuration = new Configuration({
     apiKey: process.env.OPENAI_API_KEY,
@@ -22,6 +21,4 @@ export async function generate(input:string) {
       let resGPT = completion.data.choices[0].message.content;
       console.log(resGPT);
     return resGPT
-
-  
-}
+//Test

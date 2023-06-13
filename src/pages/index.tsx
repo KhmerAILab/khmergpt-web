@@ -1,8 +1,11 @@
 import { useForm } from '@mantine/form';
-import { TextInput, Checkbox, Button, Group, Box, ButtonProps } from '@mantine/core';
+import { TextInput, Checkbox, Button, Group, Box, ButtonProps, Alert } from '@mantine/core';
 import { signIn, signOut, useSession } from "next-auth/react";
 import { GithubIcon, DiscordIcon } from '@mantine/ds';
+import { IconAlertCircle } from '@tabler/icons-react';
+import React, { useState } from "react";
 
+const [message, setMessage] = useState("")
 const Home = () => {
     // Handles the submit event on form submit.
     const { data: session, status } = useSession();
@@ -14,7 +17,10 @@ const Home = () => {
     if (status === "loading") {
       return <main>Loading...</main>;
     }
-
+    
+    const showAlert = (msg) =>{
+        setMessage(msg);
+      };
     const handleSubmit = async (message: string) => {
       const data = {
         message: message,
@@ -31,11 +37,14 @@ const Home = () => {
       }
       const res = await fetch(endpoint, options);
       const result = await res.json();
+      showAlert(`Response: ${result.data}`)
       alert(`Response: ${result.data}`)
-    }
+      
+     }
     return (
       <main>
       <div>
+        
         {session ? (
           <>
             <Box maw={300} mx="auto">
@@ -48,6 +57,7 @@ const Home = () => {
                 Logout
               </button>
                 <form onSubmit={form.onSubmit((values) => handleSubmit(values.message))}>
+                {message && <p>{message}</p>}
                 <TextInput
                 withAsterisk
                 label="Prompt"
@@ -60,7 +70,6 @@ const Home = () => {
                 </Group>
                 </form>
             </Box>
-
           </>
         ) : (
           <Group position="center" sx={{ padding: 15 }}>
@@ -76,7 +85,6 @@ const Home = () => {
 
     )
 }
-
 export function GithubButton(props: ButtonProps) {
   return (
     <Button
